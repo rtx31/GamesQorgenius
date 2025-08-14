@@ -1,78 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>EthOS Block Catcher</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodge Squares - Versi Logo</title>
+<style>
     body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: #0d1117;
-      color: #fff;
-      overflow: hidden;
+        margin: 0;
+        background: black;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        color: white;
     }
-
-    #game {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background-color: #1c1c1c;
-    }
-
-    #player {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 60px;
-      background: #3cb371;
-      border-radius: 10px;
-      text-align: center;
-      line-height: 60px;
-      font-weight: bold;
-    }
-
-    .block, .bug {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      border-radius: 5px;
-    }
-
-    .block {
-      background-color: #00acee;
-    }
-
-    .bug {
-      background-color: #ff4d4f;
-    }
-
     #score {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 20px;
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 20px;
+        background: rgba(0,0,0,0.5);
+        padding: 5px 10px;
+        border-radius: 5px;
     }
-
-    #gameOver {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 32px;
-      color: #ff4d4f;
+    #player {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
     }
-  </style>
+    .square {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: red;
+    }
+</style>
 </head>
 <body>
-  <div id="game">
-    <div id="player">🧑‍💻</div>
-    <div id="score">Score: 0</div>
-    <div id="gameOver">Game Over<br><button onclick="restartGame()">Restart</button></div>
-  </div>
 
-  <script src="game.js"></script>
+<div id="score">Skor: 0</div>
+<img id="player" src="LOGO_BASE64_DI_SINI" alt="Player">
+
+<script>
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    let score = 0;
+    let playerX = window.innerWidth / 2 - 25;
+
+    function spawnSquare() {
+        const square = document.createElement('div');
+        square.classList.add('square');
+        square.style.left = Math.random() * (window.innerWidth - 40) + 'px';
+        square.style.top = '-40px';
+        document.body.appendChild(square);
+        fall(square);
+    }
+
+    function fall(square) {
+        let y = -40;
+        const fallInterval = setInterval(() => {
+            y += 5;
+            square.style.top = y + 'px';
+
+            // Cek tabrakan
+            const squareRect = square.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
+            if (
+                squareRect.bottom >= playerRect.top &&
+                squareRect.top <= playerRect.bottom &&
+                squareRect.right >= playerRect.left &&
+                squareRect.left <= playerRect.right
+            ) {
+                alert('Game Over! Skor: ' + score);
+                window.location.reload();
+            }
+
+            // Hilangkan jika lewat
+            if (y > window.innerHeight) {
+                clearInterval(fallInterval);
+                square.remove();
+                score++;
+                scoreEl.innerText = 'Skor: ' + score;
+            }
+        }, 20);
+    }
+
+    // Gerakan keyboard
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') playerX -= 20;
+        if (e.key === 'ArrowRight') playerX += 20;
+        player.style.left = playerX + 'px';
+    });
+
+    // Gerakan sentuh (mobile)
+    let touchStartX = null;
+    window.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    });
+    window.addEventListener('touchmove', (e) => {
+        const touchX = e.touches[0].clientX;
+        if (touchStartX) {
+            const deltaX = touchX - touchStartX;
+            playerX += deltaX * 0.5;
+            player.style.left = playerX + 'px';
+            touchStartX = touchX;
+        }
+    });
+
+    // Loop spawn kotak
+    setInterval(spawnSquare, 1000);
+</script>
+
 </body>
 </html>
+
